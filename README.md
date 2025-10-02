@@ -52,3 +52,36 @@ API-ul va fi accesibil la http://localhost:8000.
 
 9. Cloneaza si front end-ul separat in vue js 3 si ruleaza-l pe local 
 folosind portul 3000. Creeaza alti useri cu rolul user si apoi cu acestia creeaza taskuri, echipe si comentarii. 
+Notes pentru Frontend
+
+Asigură-te că frontend-ul Vue 3 rulează pe localhost:3000.
+
+Sanctum folosește cookie-uri, deci CORS trebuie configurat corect.
+
+Exemplu de setări CORS în config/cors.php (daca fisierul nu exista trebuie folosita comanda:
+ php artisan config:publish cors
+pentru a-l crea):
+
+return [
+    'paths' => ['api/*'],
+    'allowed_methods' => ['*'],
+    'allowed_origins' => ['http://localhost:3000'],
+    'allowed_headers' => ['*'],
+    'exposed_headers' => [],
+    'max_age' => 0,
+    'supports_credentials' => true, // 🔑 required for cookies
+];
+
+In bootstrap/api trebuie pus:
+
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->statefulApi();
+    })
+
+In config/session.php trebuie pus:
+
+'same_site' => 'lax', //in loc de env('SESSION_SAME_SITE', 'lax'),
+
+Verifica fisierele config/session.php si config/sanctum.php.
+
+Apoi se va rula intai backend-ul pe portul 8000 si apoi frontend-ul pe portul 3000. 
