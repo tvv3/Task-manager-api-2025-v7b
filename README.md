@@ -85,3 +85,7 @@ In config/session.php trebuie pus:
 Verifica fisierele config/session.php si config/sanctum.php.
 
 Apoi se va rula intai backend-ul pe portul 8000 si apoi frontend-ul pe portul 3000. 
+
+## Demo video 
+
+Link: https://youtu.be/BOvmXLB_cBg
