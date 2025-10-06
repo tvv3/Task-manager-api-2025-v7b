@@ -88,4 +88,4 @@ Apoi se va rula intai backend-ul pe portul 8000 si apoi frontend-ul pe portul 30
 
 ## Demo video 
 
-Link: https://youtu.be/BOvmXLB_cBg
+Link: https://youtu.be/KOzk1TgwGNU
