@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateTaskRequest;
 
 use App\Http\Resources\TaskCollection;
 use App\Http\Resources\TaskResource;
+use App\Models\TasksComments;
 use App\Models\TasksUsers;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +31,12 @@ class TaskController extends Controller
         if ($ok_response)
         {
         //return 'admin';
-        return Task::with(['manager','users'])->paginate(3);
+         $tasks2=Task::with(['manager','users'])->paginate(3);
+         if (Task::with(['manager','users'])->count()>0)
+            return $tasks2;
+         else 
+            return response(['message'=>'No tasks found!'], 404);
+        
         }
         else
         {
@@ -40,14 +46,13 @@ class TaskController extends Controller
             ->orWhereExists(TasksUsers::where('task_id','=','tasks.id')->where('user_id','=',$auth_user_id))
            ->toSql();*/
             $tasks=Task::
-            whereExists(TasksUsers::whereRaw('tasks_users.task_id=tasks.id')->where('tasks_users.user_id','=',$auth_user_id))
+            whereExists(TasksUsers::where('tasks_users.task_id','=','tasks.id')->where('tasks_users.user_id','=',$auth_user_id))
             ->orWhere('tasks.manager_user_id','=',$auth_user_id)
-            ->with(['manager','users'])
-            ->paginate(2);
+            ->with(['manager','users']);
             //->toRawSql();
             //return ['message'=>$tasks];
-            if (count($tasks)>=1)
-            return $tasks;//response(['message'=>$tasks],500);
+            if ($tasks->count()>0)
+            return $tasks->paginate(2);
             else 
             return response(['message'=>'No tasks found for this user!'], 404);
         }
@@ -106,8 +111,21 @@ class TaskController extends Controller
     public function destroy(Task $task)
     {
         Gate::authorize('delete',$task);
-        $task->delete();
-        return response()->json(['message'=>'Task deleted']);
+        $comments=TasksComments::where('task_id','=',$task->id)->get();
+        $team=TasksUsers::where('task_id','=',$task->id)->get();
+         if (count($comments)>=1)
+            return response(['message'=>'Task not deleted. Comments found.'], 403);
+         else if (count($team)>=1)
+            return response(['message'=>'Task not deleted. Team members found.'], 403);
+         else
+         {
+        $deleted=$task->delete();
+        if ($deleted>0)
+            return response(['message'=>'Task deleted'],200);
+        //else
+            return response(['message'=>'Task not deleted'],500);
+           
+         }
         //return response()->noContent();
         
     }

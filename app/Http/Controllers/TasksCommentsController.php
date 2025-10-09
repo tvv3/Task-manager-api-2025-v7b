@@ -26,11 +26,11 @@ class TasksCommentsController extends Controller
     {
           Gate::authorize('listComments',[TasksComments::class, $task]);
         
-          $comments= TasksComments::where('task_id',$task->id)->with(['user'])->orderBy('created_at', 'desc')->paginate(2);
-       if (count($comments)>=1) 
-          {return $comments;}
-       // else
-         //return response()->json(['message'=>'No comments!']);
+          $comments= TasksComments::where('task_id',$task->id)
+          ->with(['user'])->orderBy('created_at', 'desc');
+       if ($comments->count()>=1) 
+          {return $comments->paginate(2);}
+       //else
          return response(['message'=>'No comments for this task'], 404);
         
     }
@@ -66,7 +66,7 @@ class TasksCommentsController extends Controller
        //can be put before validation cause we have the comment id as param
         $validated=$request->validated();// the validated fields
         if ($request->task_id!=$tasksComment->task_id)
-        {return response()->json(['errors'=>['comment'=>['Update error! This comment belongs to another task']]]);}
+        {return response(['errors'=>['comment'=>['Update error! This comment belongs to another task']]], 500);}
         $tasksComment->update(["comment"=>$validated['comment']]);//update
         
         return new TasksCommentsResource($tasksComment);//data.data.comment
@@ -76,8 +76,12 @@ class TasksCommentsController extends Controller
     public function destroy(TasksComments $tasksComment)
     {
        Gate::authorize('deleteComment',[TasksComments::class, $tasksComment]);
-        $tasksComment->delete();
-        return response()->json(['message'=>'Comment deleted']);
+        $deleted=$tasksComment->delete();
+         if ($deleted>0) 
+             return response(['message'=>'Comment deleted'], 200);
+        //else
+        return response(['message'=>'Comment not deleted'], 500);
+       
         //return response()->noContent();
     }
 }

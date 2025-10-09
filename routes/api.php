@@ -5,7 +5,7 @@ use App\Http\Controllers\TasksCommentsController;
 use App\Http\Controllers\TasksUsersController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Models\User;
 // --- Auth Routes ---
 // Get CSRF cookie for SPA
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
@@ -21,7 +21,10 @@ Route::post('/changePassword', [AuthController::class, 'changePassword'])->middl
 
 // --- User Info ---
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return User::where('id','=',$request->user()->id)->with('userRole')->first();//must put first not get or else it will bring [0]=> data instead of just data
+    return [
+            'user' => User::where('id','=',$request->user()->id)->with('userRole')->first()
+    ];
+            //must put first not get or else it will bring [0]=> data instead of just data
 
 });
 

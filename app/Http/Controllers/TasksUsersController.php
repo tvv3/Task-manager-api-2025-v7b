@@ -32,7 +32,7 @@ class TasksUsersController extends Controller
 
         if (!isset($user))
         {
-            return response("You must set a normal user as part of the task's team", 403);
+            return response("You must set a normal user as part of the task's team", 500);
         }
         // else test unicitate member in echipa
 
@@ -41,7 +41,7 @@ class TasksUsersController extends Controller
                       ->exists();
 
          if ($exists) {
-            return response()->json(['message' => 'User already in team'], 409);
+            return response(['message' => 'User already in team'], 500);//409
          }
 
         //else
@@ -53,7 +53,7 @@ class TasksUsersController extends Controller
             $tasksUsers->save();
         } catch (\Illuminate\Database\QueryException $e) {
             if ($e->getCode() == 23000) { // SQLSTATE integrity constraint
-                return response()->json(['message' => 'User already in team'], 409);
+                return response(['message' => 'User already in team'], 500);//409
             }
         
             throw $e; // pentru alte erori
@@ -70,9 +70,9 @@ class TasksUsersController extends Controller
 
        
         $deleted = DB::delete('delete from tasks_users where task_id='.$task->id.' and user_id='.$user->id);
-        if ($deleted!=0) return response()->json(['message'=>'User unassociated to task'], 200);
-        
-        return response()->json(['message'=>'Team member not identified'], 404);
+        if ($deleted>0) return response(['message'=>'User unassociated to task'], 200);
+        //else
+        return response(['message'=>'Team member not deleted'], 500);
     }
 /*
     public function search_users_for_task(Task $task)
