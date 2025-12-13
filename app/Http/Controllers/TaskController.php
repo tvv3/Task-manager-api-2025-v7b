@@ -45,10 +45,18 @@ class TaskController extends Controller
             /*return DB::table('tasks')->where('manager_user_id','=',$auth_user_id)
             ->orWhereExists(TasksUsers::where('task_id','=','tasks.id')->where('user_id','=',$auth_user_id))
            ->toSql();*/
-            $tasks=Task::
-            whereExists(TasksUsers::where('tasks_users.task_id','=','tasks.id')->where('tasks_users.user_id','=',$auth_user_id))
+            $tasks=/*Task::
+            whereExists(TasksUsers::where('tasks_users.task_id','=','`tasks.id`')->where('tasks_users.user_id','=',$auth_user_id))
             ->orWhere('tasks.manager_user_id','=',$auth_user_id)
-            ->with(['manager','users']);
+            ->with(['manager','users'])*/
+            Task::whereExists(function ($query) use ($auth_user_id) {
+        $query->select(DB::raw(1))
+              ->from('tasks_users')
+              ->whereColumn('tasks_users.task_id', 'tasks.id')
+              ->where('tasks_users.user_id', $auth_user_id);
+               })
+             ->orWhere('tasks.manager_user_id', $auth_user_id)
+            ->with(['manager', 'users']);
             //->toRawSql();
             //return ['message'=>$tasks];
             if ($tasks->count()>0)
@@ -93,7 +101,7 @@ class TaskController extends Controller
         $validated=$request->validated();// the validated fields
        // $validated['manager_task_id']=Auth::user()->id;
         $task->update($validated);// update
-        return new TaskResource($task);
+        return new TaskResource($task);//data.data.task
     }
 
     public function updateStatus(UpdateTaskRequest $request, Task $task)
