@@ -8,6 +8,7 @@ use App\Models\UsersRole;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -91,16 +92,15 @@ class AuthController extends Controller
     
     public function login(Request $request)
     {
+        
         $credentials = $request->validate([
-            'email' => 'required|email|exists:users',
+            'email' => 'required|email', //|exists:users
             'password' => 'required'
         ]);
-
         if (!Auth::attempt($credentials)) {
             return response()->json(['errors' => ['email' => ['Wrong credentials!']]], 401);
         }
-
-        //$request->session()->regenerate();//??
+        $request->session()->regenerate();//regenerate
         $user_id=Auth::user()->id;
         $user = User::where('id','=',$user_id)->first();//must put first here otherwise it will put an array [0]=> data
         if ($user) {

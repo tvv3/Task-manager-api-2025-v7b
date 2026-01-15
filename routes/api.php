@@ -8,26 +8,49 @@ use Illuminate\Support\Facades\Route;
 use App\Models\User;
 // --- Auth Routes ---
 // Get CSRF cookie for SPA
-use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
-
-Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
 //////Route::post('/registerAdmin',[AuthController::class, 'registerAdmin']);
 //the route registerAdmin must be kept but commented !!!!
 
-Route::post('/login', [AuthController::class, 'login']);//->middleware('web');
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+//login route moved to web.api
+// without login and logout placed in web.php
 Route::post('/registerUser', [AuthController::class, 'registerUser'])->middleware('auth:sanctum');
 Route::post('/changePassword', [AuthController::class, 'changePassword'])->middleware('auth:sanctum');
 
 // --- User Info ---
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+/*Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return [
             'user' => User::where('id','=',$request->user()->id)->with('userRole')->first()
     ];
             //must put first not get or else it will bring [0]=> data instead of just data
 
+});*/
+
+
+
+//Route::post('/login', [AuthController::class, 'login']);
+//use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+
+/*Route::middleware([EnsureFrontendRequestsAreStateful::class, 'auth:sanctum'])
+    ->get('/user', function (Request $request) {
+        return ['user' => $request->user()->load('userRole')];
+    });*/
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    if (!$request->user()) {
+        return response()->json(['user' => null], 200);
+    }
+    return [
+        'user' => $request->user()->load('userRole')
+    ];
 });
 
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+    /*
+Route::get('/user', function (Request $request) {
+    $user = $request->user()->load('userRole'); // load relation on the model
+    return response()->json(['user' => $user]);
+});//de pus auth sanctum !!!!!
+*/
 // --- Tasks ---
 Route::middleware('auth:sanctum')->group(function() {
     Route::apiResource('tasks', TaskController::class);

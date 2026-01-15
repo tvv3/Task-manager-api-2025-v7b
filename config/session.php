@@ -18,7 +18,7 @@ return [
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'cookie'), //database -- now cookie
+    'driver' => env('SESSION_DRIVER', 'database'), //database -- now cookie; in the end i put database again here and in .env
 
     /*
     |--------------------------------------------------------------------------
@@ -199,7 +199,7 @@ return [
     |
     */
 
-    'same_site' => 'lax', //env('SESSION_SAME_SITE', 'lax'),
+    'same_site' => 'lax',//lax //env('SESSION_SAME_SITE', 'lax'),
 
     /*
     |--------------------------------------------------------------------------
