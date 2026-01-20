@@ -101,21 +101,38 @@ class AuthController extends Controller
             return response()->json(['errors' => ['email' => ['Wrong credentials!']]], 401);
         }
         $request->session()->regenerate();//regenerate
+        if (Auth::user())
+        {
         $user_id=Auth::user()->id;
+        
         $user = User::where('id','=',$user_id)->first();//must put first here otherwise it will put an array [0]=> data
-        if ($user) {
-        $user=$user->load('userRole'); 
+        if ($user && $user instanceof User) //se previne prin instanceof verification un posibil crash
+        {
+          $user=$user->load('userRole');
+          if (!$user->userRole) {
+           // Relația nu există sau e goală
+            return response()->json([
+               'errors' => ['email' => ['Account not properly configured!']]
+                 ], 404); //No role defined is too unsecure for production
+           } 
         }
         else
         {
-           return response()->json(['errors' => ['email' => ['No role defined!']]], 401);
+           return response()->json(['errors' => ['email' => ['Account not identified!']]], 404);
         
         }
+        }
 
-        return [
+        else 
+            {
+            return response()->json([
+            'message' => 'Login not successful'
+        ], 404);
+            }
+        return response()->json([
             'user' => $user,
             'message' => 'Login successful'
-        ];
+        ], 200);
     }
 
     /**
